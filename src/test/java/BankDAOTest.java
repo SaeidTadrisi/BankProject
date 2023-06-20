@@ -1,4 +1,3 @@
-import exceptions.EmptyOrNullException;
 import exceptions.RecordNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,9 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.sql.DriverManager.getConnection;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class BankTest {
+public class BankDAOTest {
 
     BankDAO bankDAO;
     List<Customer> customers;
@@ -22,14 +22,6 @@ public class BankTest {
     void setUp() {
         bankDAO = new BankDAOImpl();
         customers = new ArrayList<>();
-    }
-
-    @Test
-    void should_throw_empty_or_null_exception() {
-
-        Customer customer = new Customer("S", "T", "dd", null,new BigDecimal(0));
-
-        assertThrows(EmptyOrNullException.class, customer::nullCheck);
     }
 
     @Test

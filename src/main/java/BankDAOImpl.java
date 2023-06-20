@@ -21,7 +21,7 @@ public class BankDAOImpl implements BankDAO{
     public static final String SAVE_Customer_SQL = "INSERT INTO customer (first_name,last_name,email_address,phone_number,balance) VALUES (?,?,?,?,?)";
     public static final String MAKE_DEPOSIT_SQL = "UPDATE customer SET balance = ? WHERE phone_number = ?";
     public static final String GET_AMOUNT_SQL = "SELECT balance FROM customer WHERE phone_number = ?";
-    public static final String DUPLICATE_SEARCH_BY_PHONE_NUMBER_SQL = "SELECT COUNT(*) FROM customer WHERE phone_number = ?";
+    public static final String DUPLICATE_SEARCH_SQL = "SELECT COUNT(*) FROM customer WHERE phone_number = ?";
     public static final String WITHDRAW_SQL = "UPDATE customer SET balance = ? WHERE phone_number = ?";
 
 
@@ -103,7 +103,7 @@ public class BankDAOImpl implements BankDAO{
     boolean duplicateCheck (String phoneNumber){
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass);
-             PreparedStatement check = connection.prepareStatement(DUPLICATE_SEARCH_BY_PHONE_NUMBER_SQL)){
+             PreparedStatement check = connection.prepareStatement(DUPLICATE_SEARCH_SQL)){
             check.setString(1,phoneNumber);
             ResultSet resultSet = check.executeQuery();
 
