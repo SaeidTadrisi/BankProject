@@ -13,29 +13,30 @@ import java.util.Properties;
 import static java.sql.DriverManager.getConnection;
 
 
-public class BankDAOImpl implements BankDAO{
+public class BankDAOImpl implements BankDAO {
 
     private String host;
     private String user;
     private String pass;
-    public static final String SAVE_Customer_SQL = "INSERT INTO customer (first_name,last_name,email_address,phone_number,balance) VALUES (?,?,?,?,?)";
-    public static final String MAKE_DEPOSIT_SQL = "UPDATE customer SET balance = ? WHERE phone_number = ?";
-    public static final String GET_AMOUNT_SQL = "SELECT balance FROM customer WHERE phone_number = ?";
-    public static final String DUPLICATE_SEARCH_SQL = "SELECT COUNT(*) FROM customer WHERE phone_number = ?";
-    public static final String WITHDRAW_SQL = "UPDATE customer SET balance = ? WHERE phone_number = ?";
+    public static final String SAVE_Customer_SQL = "INSERT INTO customers (first_name,last_name,national_Id,phone_number,balance) VALUES (?,?,?,?,?)";
+    public static final String MAKE_DEPOSIT_SQL = "UPDATE customers SET balance = ? WHERE national_Id = ?";
+    public static final String SAVE_TRANSACTION = "INSERT INTO transactions (customer_national_id, amount, transaction_type, customer_balance) VALUES (?, ?, ?,?)";
+    public static final String WITHDRAW_SQL = "UPDATE customers SET balance = ? WHERE national_Id = ?";
+    public static final String GET_AMOUNT_SQL = "SELECT balance FROM customers WHERE national_Id = ?";
+    public static final String DUPLICATE_SEARCH_SQL = "SELECT COUNT(*) FROM customers WHERE national_Id = ?";
 
 
     @Override
     public void saveCustomer(Customer customer) {
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass)) {
-            if (duplicateCheck(customer.getPhoneNumber())) {
+            if (duplicateCheck(customer.getNationalId())) {
                 throw new DuplicateRecordFoundException("The Customer has already been saved and is a duplicate");
             } else {
                 PreparedStatement saveCustomer = connection.prepareStatement(SAVE_Customer_SQL);
                 saveCustomer.setString(1, customer.getFirstName());
                 saveCustomer.setString(2, customer.getLastName());
-                saveCustomer.setString(3, customer.getEmailAddress());
+                saveCustomer.setString(3, customer.getNationalId());
                 saveCustomer.setString(4, customer.getPhoneNumber());
                 saveCustomer.setBigDecimal(5, customer.getBalance());
                 saveCustomer.executeUpdate();
@@ -46,48 +47,58 @@ public class BankDAOImpl implements BankDAO{
     }
 
     @Override
-    public void deposit (BigDecimal amount, String phoneNumber) {
+    public void transaction(String nationalId, BigDecimal amount, TransactionType transactionType) {
         loadConfigFile();
-        try (final Connection connection = getConnection(host, user, pass);
-             PreparedStatement makeDeposit = connection.prepareStatement(MAKE_DEPOSIT_SQL)) {
-            BigDecimal accountBalance = getAccountBalance(phoneNumber);
-            BigDecimal result = accountBalance.add(amount);
-            makeDeposit.setBigDecimal(1,result);
-            makeDeposit.setString(2, phoneNumber);
-            makeDeposit.executeUpdate();
-        } catch (SQLException e) {
-            throw new MainSQLException(e);
-        }
-    }
+        try (final Connection connection = getConnection(host, user, pass)) {
+            switch (transactionType) {
+                case DEPOSIT -> {
+                    PreparedStatement makeDeposit = connection.prepareStatement(MAKE_DEPOSIT_SQL);
+                    BigDecimal accountBalance = getAccountBalance(nationalId);
+                    BigDecimal result = accountBalance.add(amount);
+                    makeDeposit.setBigDecimal(1, result);
+                    makeDeposit.setString(2, nationalId);
+                    makeDeposit.executeUpdate();
 
-    @Override
-    public void withdraw(BigDecimal amount, String phoneNumber) {
-        loadConfigFile();
-        try (final Connection connection = getConnection(host, user, pass);
-             PreparedStatement withdraw = connection.prepareStatement(WITHDRAW_SQL)){
-            BigDecimal accountBalance = getAccountBalance(phoneNumber);
-            int comparisonResult = accountBalance.compareTo(amount);
-            if (comparisonResult < 0){
-            throw new BalanceException("Your account balance is insufficient");
+                    PreparedStatement saveTransaction = connection.prepareStatement(SAVE_TRANSACTION);
+                    saveTransaction.setString(1, nationalId);
+                    saveTransaction.setBigDecimal(2, amount);
+                    saveTransaction.setString(3, TransactionType.DEPOSIT.name());
+                    saveTransaction.setString(4, result.toString());
+                    saveTransaction.executeUpdate();
+                }
+                case WITHDRAWAL -> {
+                    PreparedStatement withdraw = connection.prepareStatement(WITHDRAW_SQL);
+                    BigDecimal accountBalance = getAccountBalance(nationalId);
+                    int comparisonResult = accountBalance.compareTo(amount);
 
-            }else {
-                BigDecimal result = accountBalance.subtract(amount);
-                withdraw.setBigDecimal(1, result);
-                withdraw.setString(2, phoneNumber);
-                withdraw.executeUpdate();
+                    if (comparisonResult < 0) {
+                        throw new BalanceException("Your account balance is insufficient");
+                    } else {
+                    BigDecimal result = accountBalance.subtract(amount);
+                    withdraw.setBigDecimal(1, result);
+                    withdraw.setString(2, nationalId);
+                    withdraw.executeUpdate();
+
+                    PreparedStatement saveTransaction = connection.prepareStatement(SAVE_TRANSACTION);
+                    saveTransaction.setString(1, nationalId);
+                    saveTransaction.setBigDecimal(2, amount);
+                    saveTransaction.setString(3, TransactionType.WITHDRAWAL.name());
+                    saveTransaction.setString(4, result.toString());
+                    saveTransaction.executeUpdate();
+                    }
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
     @Override
-    public BigDecimal getAccountBalance(String phoneNumber) {
+    public BigDecimal getAccountBalance(String nationalId) {
         loadConfigFile();
         BigDecimal balance;
         try (final Connection connection = getConnection(host, user, pass);
              PreparedStatement getAmount = connection.prepareStatement(GET_AMOUNT_SQL)) {
-            getAmount.setString(1,phoneNumber);
+            getAmount.setString(1,nationalId);
             ResultSet resultSet = getAmount.executeQuery();
             if (resultSet.next()){
                 balance = resultSet.getBigDecimal("balance");
@@ -100,11 +111,11 @@ public class BankDAOImpl implements BankDAO{
         return balance;
     }
 
-    boolean duplicateCheck (String phoneNumber){
+    boolean duplicateCheck (String nationalId){
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass);
              PreparedStatement check = connection.prepareStatement(DUPLICATE_SEARCH_SQL)){
-            check.setString(1,phoneNumber);
+            check.setString(1,nationalId);
             ResultSet resultSet = check.executeQuery();
 
             if (resultSet.next()){

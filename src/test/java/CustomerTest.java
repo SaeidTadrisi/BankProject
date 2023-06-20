@@ -13,7 +13,7 @@ public class CustomerTest {
 
         BankService bankService = new BankServiceImpl(new BankDAODouble());
 
-        Customer customer = new Customer("S", "T", "dd", null, new BigDecimal(0));
+        Customer customer = new Customer("S", "T", "85321496", null, new BigDecimal(0));
 
         assertThrows(EmptyOrNullException.class, customer::nullCheck);
     }
@@ -24,16 +24,13 @@ public class CustomerTest {
         }
 
         @Override
-        public void withdraw(BigDecimal amount, String phoneNumber) {
-        }
-
-        @Override
-        public void deposit(BigDecimal amount, String phoneNumber) {
-        }
-
-        @Override
         public BigDecimal getAccountBalance(String phoneNumber) {
             return null;
+        }
+
+        @Override
+        public void transaction(String nationalId, BigDecimal amount, TransactionType transactionType) {
+
         }
     }
 }

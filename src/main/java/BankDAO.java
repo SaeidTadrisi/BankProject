@@ -5,10 +5,8 @@ public interface BankDAO {
 
      void saveCustomer(Customer customer);
 
-     void withdraw (BigDecimal amount, String phoneNumber);
+     BigDecimal getAccountBalance (String nationalId);
 
-     void deposit (BigDecimal amount, String phoneNumber);
-
-     BigDecimal getAccountBalance (String phoneNumber);
+     void transaction (String nationalId, BigDecimal amount, TransactionType transactionType);
 
 }
