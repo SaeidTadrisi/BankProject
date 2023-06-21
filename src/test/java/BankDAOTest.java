@@ -1,5 +1,6 @@
 import exceptions.BalanceException;
 import exceptions.RecordNotFoundException;
+import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static java.sql.DriverManager.getConnection;
@@ -41,7 +44,7 @@ public class BankDAOTest {
     void should_throw_exception_if_could_not_find_customer() {
 
         assertThrows(RecordNotFoundException.class,
-                ()-> bankDAO.transaction("77748855",new BigDecimal(5_000_000), TransactionType.DEPOSIT) );
+                ()-> bankDAO.saveTransaction("77748855",new BigDecimal(5_000_000), TransactionType.DEPOSIT) );
     }
 
     @Test
@@ -75,7 +78,7 @@ public class BankDAOTest {
         for (Customer customer : customers){
             bankDAO.saveCustomer(customer);
         }
-        bankDAO.transaction("69874521",new BigDecimal(5_000_000),TransactionType.DEPOSIT);
+        bankDAO.saveTransaction("69874521",new BigDecimal(5_000_000),TransactionType.DEPOSIT);
 
         Assertions.assertEquals(new BigDecimal(5_000_000),bankDAO.getAccountBalance("69874521"));
     }
@@ -83,7 +86,7 @@ public class BankDAOTest {
     @Test
     void should_withdraw() {
 
-        bankDAO.transaction("69412784",new BigDecimal(50_000),TransactionType.WITHDRAWAL);
+        bankDAO.saveTransaction("69412784",new BigDecimal(50_000),TransactionType.WITHDRAWAL);
 
         Assertions.assertEquals(new BigDecimal(50_000), bankDAO.getAccountBalance("69412784"));
     }
@@ -95,6 +98,12 @@ public class BankDAOTest {
         bankDAO.saveCustomer(customer);
 
         Assertions.assertThrows(BalanceException.class, ()->
-                bankDAO.transaction("25759831", new BigDecimal(120_000), TransactionType.WITHDRAWAL));
+                bankDAO.saveTransaction("25759831", new BigDecimal(120_000), TransactionType.WITHDRAWAL));
+    }
+
+    @Test
+    void should_get_transaction_history() {
+
+        System.out.println(bankDAO.getAllTransactions("69874521"));
     }
 }

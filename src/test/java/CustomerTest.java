@@ -2,6 +2,7 @@ import exceptions.EmptyOrNullException;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -29,8 +30,12 @@ public class CustomerTest {
         }
 
         @Override
-        public void transaction(String nationalId, BigDecimal amount, TransactionType transactionType) {
+        public void saveTransaction(String nationalId, BigDecimal amount, TransactionType transactionType) {
+        }
 
+        @Override
+        public List<Transaction> getAllTransactions(String nationalId) {
+            return null;
         }
     }
 }

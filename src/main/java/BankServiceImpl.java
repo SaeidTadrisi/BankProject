@@ -1,4 +1,5 @@
 import java.math.BigDecimal;
+import java.util.List;
 
 public class BankServiceImpl implements BankService{
 
@@ -15,17 +16,17 @@ public class BankServiceImpl implements BankService{
     }
 
     @Override
-    public void withdraw(BigDecimal amount, String phoneNumber) {
-
+    public BigDecimal getAccountBalance(String nationalId) {
+        return bankDAO.getAccountBalance(nationalId);
     }
 
     @Override
-    public void deposit(BigDecimal amount, String phoneNumber) {
-
+    public void transaction(String nationalId, BigDecimal amount, TransactionType transactionType) {
+        bankDAO.saveTransaction(nationalId, amount, transactionType);
     }
 
     @Override
-    public BigDecimal getAccountBalance(String phoneNumber) {
-        return null;
+    public List<Transaction> getAllTransactions(String nationalId) {
+        return bankDAO.getAllTransactions(nationalId);
     }
 }

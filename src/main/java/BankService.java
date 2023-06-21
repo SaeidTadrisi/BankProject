@@ -1,12 +1,14 @@
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface BankService {
 
     void saveCustomer(Customer customer);
 
-    void withdraw (BigDecimal amount, String phoneNumber);
+    BigDecimal getAccountBalance (String nationalId);
 
-    void deposit (BigDecimal amount, String phoneNumber);
+    void transaction (String nationalId, BigDecimal amount, TransactionType transactionType);
 
-    BigDecimal getAccountBalance (String phoneNumber);
+    List<Transaction> getAllTransactions (String nationalId);
+
 }

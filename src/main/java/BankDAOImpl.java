@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static java.sql.DriverManager.getConnection;
@@ -15,6 +17,10 @@ import static java.sql.DriverManager.getConnection;
 
 public class BankDAOImpl implements BankDAO {
 
+    public static final String SELECT_SQL = "SELECT t.*, c.first_name, c.last_name " +
+                                            "FROM transactions t " +
+                                            "JOIN customers c ON t.customer_national_Id = c.national_Id " +
+                                            "WHERE t.customer_national_Id = ?";
     private String host;
     private String user;
     private String pass;
@@ -47,7 +53,7 @@ public class BankDAOImpl implements BankDAO {
     }
 
     @Override
-    public void transaction(String nationalId, BigDecimal amount, TransactionType transactionType) {
+    public void saveTransaction(String nationalId, BigDecimal amount, TransactionType transactionType) {
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass)) {
             switch (transactionType) {
@@ -92,6 +98,7 @@ public class BankDAOImpl implements BankDAO {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public BigDecimal getAccountBalance(String nationalId) {
         loadConfigFile();
@@ -109,6 +116,32 @@ public class BankDAOImpl implements BankDAO {
             throw new MainSQLException(e);
         }
         return balance;
+    }
+
+    @Override
+    public List<Transaction> getAllTransactions(String nationalId) {
+        loadConfigFile();
+        List<Transaction> transactionHistory = new ArrayList<>();
+
+        try (final Connection connection = getConnection(host,user,pass);
+             final PreparedStatement  select = connection.prepareStatement(SELECT_SQL)){
+                 select.setString(1,nationalId);
+                 ResultSet resultSet = select.executeQuery();
+                 while (resultSet.next()){
+                     Transaction transaction = new Transaction();
+                     transaction.setFirstName(resultSet.getString("first_name"));
+                     transaction.setLastName(resultSet.getString("last_name"));
+                     transaction.setNationalId(resultSet.getString("customer_national_id"));
+                     transaction.setTransactionType(resultSet.getString("transaction_type"));
+                     transaction.setAmount(resultSet.getBigDecimal("amount"));
+                     transaction.setCustomerBalance(resultSet.getBigDecimal("customer_balance"));
+                     transaction.setTransactionTime(String.valueOf(resultSet.getDate("transaction_time")));
+
+                     transactionHistory.add(transaction);
+                 }
+       } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        } return transactionHistory;
     }
 
     boolean duplicateCheck (String nationalId){

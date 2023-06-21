@@ -7,6 +7,7 @@ public interface BankDAO {
 
      BigDecimal getAccountBalance (String nationalId);
 
-     void transaction (String nationalId, BigDecimal amount, TransactionType transactionType);
+     void saveTransaction(String nationalId, BigDecimal amount, TransactionType transactionType);
 
+     List<Transaction> getAllTransactions (String nationalId);
 }
