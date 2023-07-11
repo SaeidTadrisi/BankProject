@@ -1,9 +1,9 @@
 import exceptions.BalanceException;
 import exceptions.CustomerDetailsException;
 import model.Customer;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import use_case.*;
 
 import java.math.BigDecimal;
 
@@ -12,13 +12,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CustomerTest {
 
-    private FakeCustomers fakeCustomers;
+    private CustomerRepository customers;
     @BeforeEach
     void setUp() {
-        fakeCustomers = new FakeCustomers();
+        customers = new FakeCustomers();
     }
-
-
 
     @Test
     void should_check_customer() {
@@ -36,61 +34,80 @@ public class CustomerTest {
         Customer customer6 = new Customer("Omid", "Moradi",
                 "6926741", "09174568219", new BigDecimal(50_000_000));
         Customer customer7 = new Customer("Omid", "Moradi",
-                "6926741", "09174568219", new BigDecimal(50_000_000));
-        Customer customer8 = new Customer("Omid", "Moradi",
-                "6926741", "091745685219", new BigDecimal(50_000_000));
+                "69236741", "091745668219", new BigDecimal(50_000_000));
 
-        Assertions.assertThrows(CustomerDetailsException.class, customer1::check);
-        Assertions.assertThrows(CustomerDetailsException.class, customer2::check);
-        Assertions.assertThrows(CustomerDetailsException.class, customer3::check);
-        Assertions.assertThrows(CustomerDetailsException.class, customer4::check);
-        Assertions.assertThrows(CustomerDetailsException.class, customer5::check);
-        Assertions.assertThrows(CustomerDetailsException.class, customer6::check);
-        Assertions.assertThrows(CustomerDetailsException.class, customer7::check);
-        Assertions.assertThrows(CustomerDetailsException.class, customer8::check);
-
-
-    }
-
-    @Test
-    void should_find_customer_with_national_id() {
-        Customer customer = fakeCustomers.findByNationalId("69236741");
-
-        Customer expectedCustomer = new Customer("Omid", "Moradi",
-                "69236741", "09174568219", new BigDecimal(50_000_000));
-        assertThat(customer).isEqualTo(expectedCustomer);
-    }
-
-    @Test
-    void should_return_account_balance_with_national_id() {
-        BigDecimal accountBalance = fakeCustomers.getAccountBalance("25874136");
-
-        assertThat(accountBalance).isEqualTo(new BigDecimal(5_000_000));
+        assertThrows(CustomerDetailsException.class, customer1::check);
+        assertThrows(CustomerDetailsException.class, customer2::check);
+        assertThrows(CustomerDetailsException.class, customer3::check);
+        assertThrows(CustomerDetailsException.class, customer4::check);
+        assertThrows(CustomerDetailsException.class, customer5::check);
+        assertThrows(CustomerDetailsException.class, customer6::check);
+        assertThrows(CustomerDetailsException.class, customer7::check);
     }
 
     @Test
     void should_make_deposit() {
 
-        Customer customer = fakeCustomers.findByNationalId("69236741");
-        customer.deposit(new BigDecimal(10_000_000));
+        Deposit deposit = new Deposit(customers);
+        GetBalance getBalance = new GetBalance(customers);
 
-        assertThat(customer.getBalance()).isEqualTo(new BigDecimal(60_000_000));
+        deposit.makeDeposit("25874136", new BigDecimal(6_000_000));
+        BigDecimal accountBalance = getBalance.getAccountBalance("25874136");
+
+        assertThat(accountBalance).isEqualTo(new BigDecimal(11_000_000));
     }
 
     @Test
     void should_make_withdraw() {
 
-        Customer customer = fakeCustomers.findByNationalId("69236741");
-        customer.withdraw(new BigDecimal(40_000_000));
+        Withdraw withdraw = new Withdraw(customers);
+        GetBalance getBalance = new GetBalance(customers);
 
-        assertThat(customer.getBalance()).isEqualTo(new BigDecimal(10_000_000));
+        withdraw.makeWithdraw("25874136", new BigDecimal(4_000_000));
+        BigDecimal accountBalance = getBalance.getAccountBalance("25874136");
+
+        assertThat(accountBalance).isEqualTo(new BigDecimal(1_000_000));
+    }
+
+    @Test
+    void should_get_account_balance() {
+
+        GetBalance getBalance = new GetBalance(customers);
+
+        BigDecimal accountBalance = getBalance.getAccountBalance("25874136");
+
+        assertThat(accountBalance).isEqualTo(new BigDecimal(5_000_000));
+    }
+
+    @Test
+    void should_find_customer_with_national_id() {
+
+        Customer customersByNationalId = customers.findByNationalId("69236741");
+
+        Customer expectedCustomer = new Customer("Omid", "Moradi",
+                "69236741", "09174568219", new BigDecimal(50_000_000));
+
+        assertThat(customersByNationalId).isEqualTo(expectedCustomer);
     }
 
     @Test
     void should_throw_balance_exception() {
-        Customer customer = fakeCustomers.findByNationalId("69236741");
+
+        Withdraw withdraw = new Withdraw(customers);
 
         assertThrows(BalanceException.class,
-                ()->customer.withdraw(new BigDecimal(70_000_000)));
+                ()->withdraw.makeWithdraw("69236741", new BigDecimal(60_000_000)));
+    }
+
+    @Test
+    void should_save_a_new_customer() {
+        SaveCustomer saveCustomer = new SaveCustomer("Omid", "Moradi",
+                "69236741", "091745668219", new BigDecimal(50_000_000));
+        Customer customer = saveCustomer.saveCustomerMethod();
+
+        Customer expectedCustomer = new Customer("Omid", "Moradi",
+                "69236741", "091745668219", new BigDecimal(50_000_000));
+
+        assertThat(customer).isEqualTo(expectedCustomer);
     }
 }

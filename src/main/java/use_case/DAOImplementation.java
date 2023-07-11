@@ -18,7 +18,7 @@ import java.util.*;
 
 import static java.sql.DriverManager.getConnection;
 
-public class DAOImplementation implements DAORepository {
+public class DAOImplementation implements DAO {
 
     private Customer customer;
     BigDecimal amount;
@@ -44,21 +44,24 @@ public class DAOImplementation implements DAORepository {
 
     public static final String DUPLICATE_SEARCH_SQL = "SELECT COUNT(*) FROM customers WHERE national_Id = ?";
 
-    @Override
-    public void saveCustomer(Customer customer) {
+
+    public void saveCustomer (String firstName, String lastName, String nationalId,
+                              String phoneNumber, BigDecimal balance){
+        SaveCustomer saveCustomer = new SaveCustomer(firstName, lastName, nationalId,
+                phoneNumber, balance);
+        Customer savedCustomer = saveCustomer.saveCustomerMethod();
         loadConfigFile();
-        customer.check();
         try (final Connection connection = getConnection(host, user, pass)) {
-            if (duplicateCheck(customer.getNationalId())) {
+            if (duplicateCheck(savedCustomer.getNationalId())) {
                 throw new DuplicateRecordFoundException("The Customer has already been saved and is a duplicate");
             } else {
-                PreparedStatement saveCustomer = connection.prepareStatement(SAVE_Customer_SQL);
-                saveCustomer.setString(1, customer.getFirstName());
-                saveCustomer.setString(2, customer.getLastName());
-                saveCustomer.setString(3, customer.getNationalId());
-                saveCustomer.setString(4, customer.getPhoneNumber());
-                saveCustomer.setBigDecimal(5, customer.getBalance());
-                saveCustomer.executeUpdate();
+                PreparedStatement saveCustomerStatement = connection.prepareStatement(SAVE_Customer_SQL);
+                saveCustomerStatement.setString(1, savedCustomer.getFirstName());
+                saveCustomerStatement.setString(2, savedCustomer.getLastName());
+                saveCustomerStatement.setString(3, savedCustomer.getNationalId());
+                saveCustomerStatement.setString(4, savedCustomer.getPhoneNumber());
+                saveCustomerStatement.setBigDecimal(5, savedCustomer.getBalance());
+                saveCustomerStatement.executeUpdate();
             }
         } catch (SQLException e) {
             throw new MainSQLException(e);
@@ -66,17 +69,34 @@ public class DAOImplementation implements DAORepository {
     }
 
     @Override
-    public void deposit(String nationalId, BigDecimal amount) {
+    public void makeDeposit(String nationalId, BigDecimal amount) {
         this.amount = amount;
-        findCustomerByNationalId(nationalId);
-        customer.deposit(amount);
+        Deposit deposit = new Deposit(this::findByNationalId);
+        deposit.makeDeposit(nationalId,amount);
+        loadConfigFile();
+        try (final Connection connection = getConnection(host, user, pass)) {
+            PreparedStatement makeDepositStatement = connection.prepareStatement(MAKE_DEPOSIT_SQL);
+            makeDepositStatement.setBigDecimal(1, customer.getBalance());
+            makeDepositStatement.setString(2, nationalId);
+            makeDepositStatement.executeUpdate();
+
+            saveTransaction();
+        } catch (SQLException e) {
+            throw new MainSQLException(e);
+        }
+    }
+    @Override
+    public void makeWithdraw(String nationalId, BigDecimal amount) {
+        this.amount = amount;
+        Withdraw withdraw = new Withdraw(this::findByNationalId);
+        withdraw.makeWithdraw(nationalId,amount);
 
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass)) {
-            PreparedStatement makeDeposit = connection.prepareStatement(MAKE_DEPOSIT_SQL);
-            makeDeposit.setBigDecimal(1, customer.getBalance());
-            makeDeposit.setString(2, nationalId);
-            makeDeposit.executeUpdate();
+            PreparedStatement MakeWithdrawStatement = connection.prepareStatement(WITHDRAW_SQL);
+            MakeWithdrawStatement.setBigDecimal(1, customer.getBalance());
+            MakeWithdrawStatement.setString(2, nationalId);
+            MakeWithdrawStatement.executeUpdate();
 
             saveTransaction();
         } catch (SQLException e) {
@@ -85,22 +105,60 @@ public class DAOImplementation implements DAORepository {
     }
 
     @Override
-    public void withdraw(String nationalId, BigDecimal amount) {
-        this.amount = amount;
-        findCustomerByNationalId(nationalId);
-        customer.withdraw(amount);
+    public BigDecimal getAccountBalance(String nationalId) {
+        GetBalance getBalance = new GetBalance(this::findByNationalId);
+        return getBalance.getAccountBalance(nationalId);
+    }
 
+    @Override
+    public List<Transactions> getTransactions(String nationalId) {
+
+    GetTransaction getTransaction = new GetTransaction(this::findTransactionsByNationalId);
+    getTransaction.getTransactionsList(nationalId);
+        return getTransaction.transactionsList;
+    }
+
+
+        public List<Transactions> findTransactionsByNationalId(String nationalId) {
+            List<Transactions> transactionHistory = new ArrayList<>();
+        loadConfigFile();
+        try (final Connection connection = getConnection(host, user, pass);
+             final PreparedStatement select = connection.prepareStatement(SELECT_SQL)) {
+            select.setString(1, nationalId);
+            ResultSet resultSet = select.executeQuery();
+            while (resultSet.next()) {
+                Transactions transaction = new Transactions
+                    (resultSet.getString("first_name"), resultSet.getString("last_name"),
+                    resultSet.getString("customer_national_id"), resultSet.getString("transaction_type"),
+                    resultSet.getBigDecimal("amount"), resultSet.getBigDecimal("customer_balance"),
+                    resultSet.getString("transaction_time"));
+                transactionHistory.add(transaction);
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+            return transactionHistory;
+        }
+
+    public Customer findByNationalId(String nationalId1) {
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass)) {
-            PreparedStatement withdraw = connection.prepareStatement(WITHDRAW_SQL);
-            withdraw.setBigDecimal(1, customer.getBalance());
-            withdraw.setString(2, nationalId);
-            withdraw.executeUpdate();
-
-            saveTransaction();
+            PreparedStatement selectCustomer = connection.prepareStatement(GET_CUSTOMER_BY_NATIONAL_ID);
+            selectCustomer.setString(1, nationalId1);
+            ResultSet resultSet = selectCustomer.executeQuery();
+            if (resultSet.next()) {
+                String firstName = resultSet.getString("first_name");
+                String lastName = resultSet.getString("last_name");
+                String phoneNumber = resultSet.getString("phone_number");
+                BigDecimal balance = resultSet.getBigDecimal("balance");
+                customer = new Customer(firstName, lastName, nationalId1, phoneNumber, balance);
+            } else {
+                throw new RecordNotFoundException();
+            }
         } catch (SQLException e) {
-            throw new MainSQLException(e);
+            throw new RuntimeException(e);
         }
+        return customer;
     }
 
     public void saveTransaction() {
@@ -117,60 +175,7 @@ public class DAOImplementation implements DAORepository {
         }
     }
 
-    @Override
-    public Customer findCustomerByNationalId(String nationalId) {
-        loadConfigFile();
-        try (final Connection connection = getConnection(host, user, pass)) {
-            PreparedStatement selectCustomer = connection.prepareStatement(GET_CUSTOMER_BY_NATIONAL_ID);
-
-            selectCustomer.setString(1, nationalId);
-            ResultSet resultSet = selectCustomer.executeQuery();
-            if (resultSet.next()) {
-                String firstName = resultSet.getString("first_name");
-                String lastName = resultSet.getString("last_name");
-                String phoneNumber = resultSet.getString("phone_number");
-                BigDecimal balance = resultSet.getBigDecimal("balance");
-                customer = new Customer(firstName, lastName, nationalId, phoneNumber, balance);
-            } else {
-                throw new RecordNotFoundException();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return customer;
-    }
-
-    @Override
-    public List<Transactions> getTransactions(String nationalId) {
-        loadConfigFile();
-        List<Transactions> transactionHistory = new ArrayList<>();
-
-    try (final Connection connection = getConnection(host, user, pass);
-         final PreparedStatement select = connection.prepareStatement(SELECT_SQL)) {
-            select.setString(1, nationalId);
-            ResultSet resultSet = select.executeQuery();
-            while (resultSet.next()) {
-                Transactions transaction = new Transactions
-                (resultSet.getString("first_name"), resultSet.getString("last_name"),
-                resultSet.getString("customer_national_id"), resultSet.getString("transaction_type"),
-                resultSet.getBigDecimal("amount"), resultSet.getBigDecimal("customer_balance"),
-                resultSet.getString("transaction_time"));
-
-                transactionHistory.add(transaction);
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-        return transactionHistory;
-    }
-
-    @Override
-    public BigDecimal getAccountBalance(String nationalId) {
-        findCustomerByNationalId(nationalId);
-        return customer.getBalance();
-    }
-
-    boolean duplicateCheck(String nationalId) {
+    private boolean duplicateCheck(String nationalId) {
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass);
              PreparedStatement check = connection.prepareStatement(DUPLICATE_SEARCH_SQL)) {
@@ -183,7 +188,6 @@ public class DAOImplementation implements DAORepository {
             }
         } catch (SQLException e) {
             throw new MainSQLException(e);
-
         }
         return false;
     }

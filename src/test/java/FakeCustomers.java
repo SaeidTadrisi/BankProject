@@ -1,12 +1,13 @@
 import model.Customer;
+import use_case.CustomerRepository;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FakeCustomers {
+public class FakeCustomers implements CustomerRepository {
 
-    Map<String,Customer> customers;
+    Map<String, Customer> customers;
 
     public FakeCustomers() {
 
@@ -26,10 +27,5 @@ public class FakeCustomers {
 
     public Customer findByNationalId(String nationalId) {
         return customers.get(nationalId);
-    }
-
-
-    public BigDecimal getAccountBalance(String nationalId) {
-        return customers.get(nationalId).getBalance();
     }
 }
