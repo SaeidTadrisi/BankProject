@@ -4,6 +4,7 @@ import exceptions.DuplicateRecordFoundException;
 import exceptions.MainSQLException;
 import exceptions.RecordNotFoundException;
 import model.Customer;
+import model.Profile;
 import model.Transactions;
 
 import java.io.FileInputStream;
@@ -151,7 +152,7 @@ public class DAOImplementation implements DAO {
                 String lastName = resultSet.getString("last_name");
                 String phoneNumber = resultSet.getString("phone_number");
                 BigDecimal balance = resultSet.getBigDecimal("balance");
-                customer = new Customer(firstName, lastName, nationalId1, phoneNumber, balance);
+                customer = new Customer(new Profile(firstName, lastName, nationalId1, phoneNumber), balance);
             } else {
                 throw new RecordNotFoundException();
             }

@@ -1,7 +1,7 @@
 package model;
 
-import exceptions.BalanceException;
 import exceptions.CustomerDetailsException;
+import exceptions.InsufficientAccountBalance;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -10,49 +10,29 @@ import static model.TransactionType.DEPOSIT;
 import static model.TransactionType.WITHDRAW;
 
 public class Customer {
-    private final String firstName;
-    private final String lastName;
-    private final String nationalId;
-    private final String phoneNumber;
+    private final Profile profile;
     private BigDecimal balance;
     private TransactionType transactionType;
 
-    public Customer(String firstName, String lastName, String nationalId, String phoneNumber, BigDecimal balance) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.nationalId = nationalId;
-        this.phoneNumber = phoneNumber;
+    public Customer(Profile profile, BigDecimal balance) {
+
+        this.profile = profile;
         this.balance = balance;
     }
 
-    public void deposit(BigDecimal amount){
+    public void deposit(BigDecimal amount) {
         transactionType = DEPOSIT;
         balance = balance.add(amount);
     }
 
-    public void withdraw(BigDecimal amount){
+    public void withdraw(BigDecimal amount) {
         transactionType = WITHDRAW;
-        if (balance.compareTo(amount) < 0 ){
-            throw new BalanceException("Your account balance is insufficient");
+        if (balance.compareTo(amount) < 0) {
+            throw new InsufficientAccountBalance("Your account balance is insufficient");
         }
         balance = balance.subtract(amount);
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getNationalId() {
-        return nationalId;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
 
     public BigDecimal getBalance() {
         return balance;
@@ -63,36 +43,20 @@ public class Customer {
     }
 
     public void check () {
-        if (firstName == null || firstName.isEmpty()) {
-            throw new CustomerDetailsException("You must enter the name");
-        }
-        if (lastName == null || lastName.isEmpty()) {
-            throw new CustomerDetailsException("You must enter the last name");
-        }
-        if (nationalId == null || nationalId.isEmpty()) {
-            throw new CustomerDetailsException("You must enter the email address");
-        }
-        if (phoneNumber == null || phoneNumber.isEmpty()) {
-            throw new CustomerDetailsException("You must enter the phone number");
-        }
+
+        profile.check();
         if (balance == null) {
             throw new CustomerDetailsException("You must enter the balance");
         }
-        if (nationalId.length() != 8 ){
-            throw new CustomerDetailsException("Your National Id must be 8 digits");
-        }
-        if (phoneNumber.length() != 11){
-            throw new CustomerDetailsException("Your Phone number must be 11 digits");
-        }
     }
+
+
     @Override
     public String toString() {
         return "Customer{" +
-                "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", nationalId='" + nationalId + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
+                "profile=" + profile +
                 ", balance=" + balance +
+                ", transactionType=" + transactionType +
                 '}';
     }
 
@@ -101,11 +65,28 @@ public class Customer {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Customer customer = (Customer) o;
-        return firstName.equals(customer.firstName) && lastName.equals(customer.lastName) && nationalId.equals(customer.nationalId) && phoneNumber.equals(customer.phoneNumber) && balance.equals(customer.balance);
+        return Objects.equals(profile, customer.profile) && Objects.equals(balance, customer.balance) && transactionType == customer.transactionType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(firstName, lastName, nationalId, phoneNumber, balance);
+        return Objects.hash(profile, balance, transactionType);
+    }
+
+    public String getNationalId() {
+        return profile.getNationalId();
+    }
+
+    public String getFirstName() {
+        return profile.getFirstName();
+    }
+
+    public String getLastName() {
+        return profile.getLastName();
+    }
+
+    public String getPhoneNumber() {
+        return profile.getPhoneNumber();
     }
 }
+

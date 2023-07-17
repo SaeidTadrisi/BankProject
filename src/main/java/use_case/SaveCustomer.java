@@ -1,6 +1,7 @@
 package use_case;
 
 import model.Customer;
+import model.Profile;
 
 import java.math.BigDecimal;
 
@@ -22,6 +23,6 @@ public class SaveCustomer {
     }
 
     public Customer saveCustomerMethod(){
-        return new Customer(firstName,lastName,nationalId,phoneNumber,balance);
+        return new Customer(new Profile(firstName,lastName,nationalId,phoneNumber),balance);
     }
 }

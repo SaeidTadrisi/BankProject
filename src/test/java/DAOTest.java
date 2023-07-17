@@ -1,5 +1,6 @@
 import exceptions.RecordNotFoundException;
 import model.Customer;
+import model.Profile;
 import model.Transactions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,8 +68,8 @@ public class DAOTest {
         dao.saveCustomer("Ali", "Rezaei",
                 "25874136", "09123698514", new BigDecimal(5_000_000));
 
-        Customer customer = new Customer("Ali", "Rezaei",
-                "25874136", "09123698514", new BigDecimal(5_000_000));
+        Customer customer = new Customer(new Profile("Ali", "Rezaei",
+                "25874136", "09123698514"), new BigDecimal(5_000_000));
 
         Customer customerByNationalId = dao.findByNationalId("25874136");
 
