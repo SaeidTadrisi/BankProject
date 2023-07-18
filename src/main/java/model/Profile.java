@@ -4,45 +4,42 @@ import exceptions.CustomerDetailsException;
 
 public class Profile {
 
-    private final String fistName;
+    private final String firstName;
     private final String lastName;
     private final String nationalId;
     private final String phoneNumber;
 
-    public Profile(String fistName, String lastName, String nationalId, String phoneNumber) {
-
-        this.fistName = fistName;
+    public Profile(String firstName, String lastName, String nationalId, String phoneNumber) {
+        this.firstName = firstName;
         this.lastName = lastName;
         this.nationalId = nationalId;
         this.phoneNumber = phoneNumber;
     }
 
-
     void check(){
-        if (getFirstName() == null || getFirstName().isEmpty()) {
+        if (firstName == null || firstName.isEmpty()) {
             throw new CustomerDetailsException("You must enter the name");
         }
-        if (getLastName() == null || getLastName().isEmpty()) {
+        if (lastName == null || lastName.isEmpty()) {
             throw new CustomerDetailsException("You must enter the last name");
         }
-        if (getNationalId() == null || getNationalId().isEmpty()) {
+        if (nationalId == null || nationalId.isEmpty()) {
             throw new CustomerDetailsException("You must enter the email address");
         }
-        if (getPhoneNumber() == null || getPhoneNumber().isEmpty()) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
             throw new CustomerDetailsException("You must enter the phone number");
         }
-        if (getNationalId().length() != 8 ){
+        if (nationalId.length() != 8 ){
             throw new CustomerDetailsException("Your National Id must be 8 digits");
         }
-        if (getPhoneNumber().length() != 11){
+        if (phoneNumber.length() != 11){
             throw new CustomerDetailsException("Your Phone number must be 11 digits");
         }
-
     }
+
     public String getFirstName() {
-        return fistName;
+        return firstName;
     }
-
     public String getLastName() {
         return lastName;
     }
