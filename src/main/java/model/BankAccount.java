@@ -4,7 +4,6 @@ import exceptions.InsufficientAccountBalanceException;
 import exceptions.VariousCurrencyException;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.UUID;
 
 public class BankAccount {
@@ -18,10 +17,11 @@ public class BankAccount {
         this.profile = profile;
         this.money = money;
         this.balance = money.getAmount();
+        this.accountNumber = accountNumberGenerator();
     }
 
     private String accountNumberGenerator() {
-        return accountNumber = UUID.randomUUID().toString().replace("-", "")
+        return UUID.randomUUID().toString().replace("-", "")
                 .replaceAll("[^0-9]", "").substring(0, 10);
     }
 
@@ -51,48 +51,8 @@ public class BankAccount {
         money.check();
     }
 
-    public String getFirstName() {
-        return profile.getFirstName();
-    }
-
-    public String getLastName() {
-        return profile.getLastName();
-    }
-
-    public String getNationalId() {
-        return profile.getNationalId();
-    }
-
-    public String getPhoneNumber() {
-        return profile.getPhoneNumber();
-    }
-
     public String getAccountNumber() {
         return accountNumber;
     }
-
-    @Override
-    public String toString() {
-        return "BankAccount{" +
-                "profile=" + profile +
-                ", balance=" + balance +
-                ", money=" + money +
-                ", accountNumber='" + accountNumber + '\'' +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BankAccount that = (BankAccount) o;
-        return Objects.equals(profile, that.profile) && Objects.equals(balance, that.balance) && Objects.equals(money, that.money) && Objects.equals(accountNumber, that.accountNumber);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(profile, balance, money, accountNumber);
-    }
 }
-
 

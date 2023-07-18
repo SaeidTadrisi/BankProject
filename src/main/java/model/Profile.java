@@ -36,19 +36,4 @@ public class Profile {
             throw new CustomerDetailsException("Your Phone number must be 11 digits");
         }
     }
-
-    public String getFirstName() {
-        return firstName;
-    }
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getNationalId() {
-        return nationalId;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
 }

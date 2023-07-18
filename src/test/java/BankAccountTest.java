@@ -5,11 +5,14 @@ import exceptions.VariousCurrencyException;
 import model.BankAccount;
 import model.Money;
 import model.Profile;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import use_case.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static model.CurrencyTypes.EURO;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,6 +110,7 @@ public class BankAccountTest {
         BigDecimal accountBalance = retrieveBalance.getAccountBalance("1298574125");
 
         assertThat(accountBalance).isEqualTo(new BigDecimal(50_000));
+
     }
 
     @Test
@@ -129,5 +133,22 @@ public class BankAccountTest {
         assertThrows(VariousCurrencyException.class,
                 ()-> makeTransfer.execute("3512579654", "1298574125",
                         new Money(new BigDecimal(10_000), EURO)));
+    }
+
+    @Test
+    void should_get_transaction_history() {
+        List<TransactionDTO> byAccountNumber = transactions.getByAccountNumber("1298574125");
+
+        List<TransactionDTO> expectedList = new ArrayList<>();
+        expectedList.add(new TransactionDTO("1298574125",new Money(new BigDecimal(10_000), EURO)
+                , new BigDecimal(50_000),"DEPOSIT" ));
+
+        expectedList.add(new TransactionDTO("1298574125",new Money(new BigDecimal(10_000), EURO)
+                , new BigDecimal(50_000),"Withdraw" ));
+
+        expectedList.add(new TransactionDTO("1298574125",new Money(new BigDecimal(10_000), EURO)
+                , new BigDecimal(50_000),"Transfer" ));
+
+        Assertions.assertThat(byAccountNumber.toString()).isEqualTo(expectedList.toString());
     }
 }
