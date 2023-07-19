@@ -1,11 +1,10 @@
 import exceptions.CustomerDetailsException;
 import exceptions.InsufficientAccountBalanceException;
-import exceptions.InvalidEntryException;
+import exceptions.InvalidAmountEntryException;
 import exceptions.VariousCurrencyException;
 import model.BankAccount;
 import model.Money;
 import model.Profile;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import use_case.*;
@@ -63,7 +62,7 @@ public class BankAccountTest {
         assertThrows(CustomerDetailsException.class, bankAccount2::check);
         assertThrows(CustomerDetailsException.class, bankAccount3::check);
         assertThrows(CustomerDetailsException.class, bankAccount4::check);
-        assertThrows(InvalidEntryException.class, bankAccount5::check);
+        assertThrows(InvalidAmountEntryException.class, bankAccount5::check);
         assertThrows(CustomerDetailsException.class, bankAccount6::check);
         assertThrows(CustomerDetailsException.class, bankAccount7::check);
     }
@@ -149,6 +148,6 @@ public class BankAccountTest {
         expectedList.add(new TransactionDTO("1298574125",new Money(new BigDecimal(10_000), EURO)
                 , new BigDecimal(50_000),"Transfer" ));
 
-        Assertions.assertThat(byAccountNumber.toString()).isEqualTo(expectedList.toString());
+        assertThat(byAccountNumber.toString()).isEqualTo(expectedList.toString());
     }
 }

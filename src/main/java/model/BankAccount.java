@@ -10,13 +10,13 @@ public class BankAccount {
     private final Profile profile;
     private BigDecimal balance;
     private final Money money;
-    private String accountNumber;
+    private final String accountNumber;
 
     public BankAccount(Profile profile, Money money) {
-
         this.profile = profile;
         this.money = money;
         this.balance = money.getAmount();
+        check();
         this.accountNumber = accountNumberGenerator();
     }
 

@@ -31,6 +31,11 @@ public class FakeBankAccounts implements BankAccounts {
         customers.put("3247851238",omidMoradi);
     }
 
+    @Override
+    public void saveNewCustomer(BankAccount bankAccount) {
+
+    }
+
     public BankAccount findByAccountNumber(String accountNumber) {
         return customers.get(accountNumber);
     }
