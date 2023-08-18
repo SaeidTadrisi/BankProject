@@ -3,5 +3,6 @@ package model;
 public enum TransactionType {
     WITHDRAW,
     DEPOSIT,
-    TRANSFERS,
+    TRANSFERS_SENT,
+    TRANSFERS_RECEIVED,
 }

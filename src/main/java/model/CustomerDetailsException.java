@@ -1,4 +1,4 @@
-package exceptions;
+package model;
 
 public class CustomerDetailsException extends RuntimeException {
 

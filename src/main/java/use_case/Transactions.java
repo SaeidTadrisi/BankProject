@@ -3,7 +3,7 @@ package use_case;
 import java.util.List;
 
 public interface Transactions {
-    List<TransactionDTO> getByAccountNumber(String accountNumber);
+    List<TransactionDTO> getTransactions(String accountNumber);
+    void saveTransaction(TransactionDTO transactionDTO);
 
-    void saveByAccountNumber(TransactionDTO transactionDTO);
 }

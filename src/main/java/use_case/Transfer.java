@@ -3,14 +3,14 @@ package use_case;
 import model.BankAccount;
 import model.Money;
 
-import static model.TransactionType.TRANSFERS;
+import static model.TransactionType.*;
 
-public class MakeTransfer {
+public class Transfer {
 
     private final BankAccounts bankAccounts;
     private final Transactions transactions;
 
-    public MakeTransfer(BankAccounts bankAccounts, Transactions transactions) {
+    public Transfer(BankAccounts bankAccounts, Transactions transactions) {
         this.bankAccounts = bankAccounts;
         this.transactions = transactions;
     }
@@ -23,10 +23,12 @@ public class MakeTransfer {
         destinationBankAccount.deposit(money);
 
         bankAccounts.saveBalance(new BankAccountDTO(sourceBankAccountNumber,sourceBankAccount.getBalance()));
-        transactions.saveByAccountNumber(new TransactionDTO(sourceBankAccountNumber
-                ,money,sourceBankAccount.getBalance(), TRANSFERS.name()));
         bankAccounts.saveBalance(new BankAccountDTO(destinationBankAccountNumber, destinationBankAccount.getBalance()));
-        transactions.saveByAccountNumber(new TransactionDTO(destinationBankAccountNumber
-                                        ,money,destinationBankAccount.getBalance(), TRANSFERS.name()));
+        transactions.saveTransaction(new TransactionDTO(sourceBankAccountNumber
+                ,money.getAmount(),money.getCurrencyType().name()
+                ,sourceBankAccount.getBalance(),TRANSFERS_SENT.name()));
+        transactions.saveTransaction(new TransactionDTO(destinationBankAccountNumber
+                ,money.getAmount(),money.getCurrencyType().name()
+                ,destinationBankAccount.getBalance(), TRANSFERS_RECEIVED.name()));
     }
 }

@@ -1,8 +1,5 @@
 package model;
 
-import exceptions.InsufficientAccountBalanceException;
-import exceptions.VariousCurrencyException;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -53,6 +50,42 @@ public class BankAccount {
 
     public String getAccountNumber() {
         return accountNumber;
+    }
+
+    public String getFirstName() {
+        return profile.getFirstName();
+    }
+
+    public String getLastName() {
+        return profile.getLastName();
+    }
+
+    public String getNationalId() {
+        return profile.getNationalId();
+    }
+
+    public String getPhoneNumber() {
+        return profile.getPhoneNumber();
+    }
+
+    public BigDecimal getAmount() {
+        return balance;
+    }
+
+    public CurrencyTypes getCurrencyType() {
+        return money.getCurrencyType();
+    }
+
+    @Override
+    public String toString() {
+        return "BankAccount{" +
+                "firstName='" + getFirstName() + '\'' +
+                ", lastName='" + getLastName() + '\'' +
+                ", nationalId='" + getNationalId() + '\'' +
+                ", phoneNumber='" + getPhoneNumber() + '\'' +
+                ", balance=" + getAmount() +
+                ", currency=" + getCurrencyType() +
+                '}';
     }
 }
 

@@ -1,7 +1,5 @@
 package model;
 
-import exceptions.CustomerDetailsException;
-
 public class Profile {
 
     private final String firstName;
@@ -35,5 +33,31 @@ public class Profile {
         if (phoneNumber.length() != 11){
             throw new CustomerDetailsException("Your Phone number must be 11 digits");
         }
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getNationalId() {
+        return nationalId;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "Profile{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", nationalId='" + nationalId + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                '}';
     }
 }

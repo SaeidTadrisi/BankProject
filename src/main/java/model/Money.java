@@ -1,7 +1,5 @@
 package model;
 
-import exceptions.InvalidAmountEntryException;
-
 import java.math.BigDecimal;
 
 public class Money {
