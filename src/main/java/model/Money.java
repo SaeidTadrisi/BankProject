@@ -1,7 +1,5 @@
 package model;
 
-import exceptions.InvalidEntryException;
-
 import java.math.BigDecimal;
 
 public class Money {
@@ -17,7 +15,7 @@ public class Money {
 
     public void check() {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0 ) {
-            throw new InvalidEntryException();
+            throw new InvalidAmountEntryException();
         }
     }
     public BigDecimal getAmount() {

@@ -1,49 +1,50 @@
 package use_case;
 
-import model.Money;
-
 import java.math.BigDecimal;
-import java.util.Objects;
 
 public class TransactionDTO {
 
     private final String accountNumber;
-    private final Money money;
-    private final BigDecimal customerBalance;
     private final String transactionType;
+    private final String currencyType;
+    private final BigDecimal amount;
+    private final BigDecimal customerBalance;
 
-    public TransactionDTO(String accountNumber, Money money
+    public TransactionDTO(String accountNumber,BigDecimal amount, String currencyType
             , BigDecimal customerBalance, String transactionType) {
 
         this.accountNumber = accountNumber;
-        this.money = money;
+        this.amount = amount;
+        this.currencyType = currencyType;
         this.customerBalance = customerBalance;
         this.transactionType = transactionType;
     }
+    public String getAccountNumber() {
+        return accountNumber;
+    }
 
+    public String getTransactionType() {
+        return transactionType;
+    }
+
+    public String getCurrencyType() {
+        return currencyType;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public BigDecimal getCustomerBalance() {
+        return customerBalance;
+    }
 
     @Override
     public String toString() {
-        return "TransactionDTO{" +
-                "accountNumber='" + accountNumber + '\'' +
-                ", money=" + money +
-                ", customerBalance=" + customerBalance +
+        return  "accountNumber='" + accountNumber + '\'' +
                 ", transactionType='" + transactionType + '\'' +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TransactionDTO that = (TransactionDTO) o;
-        return Objects.equals(accountNumber, that.accountNumber) && Objects.equals(money, that.money)
-                && Objects.equals(customerBalance, that.customerBalance)
-                && Objects.equals(transactionType, that.transactionType);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(accountNumber, money, customerBalance, transactionType);
+                ", currencyType='" + currencyType + '\'' +
+                ", amount=" + amount +
+                ", customerBalance=" + customerBalance;
     }
 }

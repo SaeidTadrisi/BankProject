@@ -5,11 +5,11 @@ import model.Money;
 
 import static model.TransactionType.DEPOSIT;
 
-public class MakeDeposit {
+public class Deposit {
     private final BankAccounts bankAccounts;
     private final Transactions transactions;
 
-    public MakeDeposit(BankAccounts bankAccounts, Transactions transactions) {
+    public Deposit(BankAccounts bankAccounts, Transactions transactions) {
     this.bankAccounts = bankAccounts;
     this.transactions = transactions;
     }
@@ -20,7 +20,7 @@ public class MakeDeposit {
         bankAccount.deposit(money);
 
         bankAccounts.saveBalance(new BankAccountDTO(accountNumber, bankAccount.getBalance()));
-        transactions.saveByAccountNumber(new TransactionDTO(accountNumber,money,bankAccount.getBalance(),
-                                         DEPOSIT.name()));
+        transactions.saveTransaction(new TransactionDTO(accountNumber,money.getAmount(),money.getCurrencyType().name()
+                ,bankAccount.getBalance(), DEPOSIT.name()));
     }
 }
