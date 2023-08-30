@@ -1,25 +1,18 @@
 package model;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public class BankAccount {
     private final Profile profile;
     private BigDecimal balance;
     private final Money money;
-    private final String accountNumber;
+
 
     public BankAccount(Profile profile, Money money) {
         this.profile = profile;
         this.money = money;
         this.balance = money.getAmount();
         check();
-        this.accountNumber = accountNumberGenerator();
-    }
-
-    private String accountNumberGenerator() {
-        return UUID.randomUUID().toString().replace("-", "")
-                .replaceAll("[^0-9]", "").substring(0, 10);
     }
 
     public void deposit(Money money) {
@@ -46,10 +39,6 @@ public class BankAccount {
     public void check() {
         profile.check();
         money.check();
-    }
-
-    public String getAccountNumber() {
-        return accountNumber;
     }
 
     public String getFirstName() {

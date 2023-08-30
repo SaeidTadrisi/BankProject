@@ -1,6 +1,7 @@
 package use_case;
 
 import model.BankAccount;
+import model.BankAccounts;
 
 import java.math.BigDecimal;
 

@@ -1,7 +1,9 @@
 package use_case;
 
 import model.BankAccount;
+import model.BankAccounts;
 import model.Money;
+import model.Transactions;
 
 import static model.TransactionType.*;
 
@@ -22,13 +24,10 @@ public class Transfer {
         sourceBankAccount.withdraw(money);
         destinationBankAccount.deposit(money);
 
-        bankAccounts.saveBalance(new BankAccountDTO(sourceBankAccountNumber,sourceBankAccount.getBalance()));
-        bankAccounts.saveBalance(new BankAccountDTO(destinationBankAccountNumber, destinationBankAccount.getBalance()));
-        transactions.saveTransaction(new TransactionDTO(sourceBankAccountNumber
-                ,money.getAmount(),money.getCurrencyType().name()
-                ,sourceBankAccount.getBalance(),TRANSFERS_SENT.name()));
-        transactions.saveTransaction(new TransactionDTO(destinationBankAccountNumber
-                ,money.getAmount(),money.getCurrencyType().name()
-                ,destinationBankAccount.getBalance(), TRANSFERS_RECEIVED.name()));
+        transactions.saveToDatabase(new SaveTransactionDTO(sourceBankAccount, money)
+                ,sourceBankAccountNumber, TRANSFERS_SENT);
+        transactions.saveToDatabase(new SaveTransactionDTO(destinationBankAccount, money)
+                ,destinationBankAccountNumber, TRANSFERS_RECEIVED);
+
     }
 }

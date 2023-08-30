@@ -1,9 +1,6 @@
 import infrastracture.MySQLBankAccounts;
 import infrastracture.MySQLTransactions;
-import model.BankAccount;
-import model.CurrencyTypes;
-import model.Money;
-import model.Profile;
+import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import use_case.*;
@@ -40,43 +37,43 @@ public class MySQLBankAccountsTest {
     @Test
     void should_save_new_account() {
         bankAccounts.saveNewCustomer(new BankAccount
-                (new Profile("Saeid", "Tadrisi","30214587","09123654789"),
+                (new Profile("Saeid", "Tadrisi","30217587","09123654789"),
                         new Money(new BigDecimal(50_000), CurrencyTypes.EURO)));
     }
 
     @Test
     void should_find_a_bank_account() {
-        BankAccount byAccountNumber = bankAccounts.findByAccountNumber("9050442999");
+        BankAccount byAccountNumber = bankAccounts.findByAccountNumber("6839754810");
         System.out.println(byAccountNumber);
     }
 
     @Test
     void should_make_deposit() {
         Deposit deposit = new Deposit(bankAccounts, transactions);
-        deposit.execute("9050442999", new Money(new BigDecimal(10_000), CurrencyTypes.EURO));
+        deposit.execute("6839754810", new Money(new BigDecimal(10_000), CurrencyTypes.EURO));
     }
 
     @Test
     void should_make_withdraw() {
         Withdraw withdraw = new Withdraw(bankAccounts, transactions);
-        withdraw.execute("9050442999",new Money(new BigDecimal(10_000), CurrencyTypes.EURO));
+        withdraw.execute("6839754810",new Money(new BigDecimal(10_000), CurrencyTypes.EURO));
     }
 
     @Test
     void should_transfer() {
         Transfer transfer = new Transfer(bankAccounts, transactions);
-        transfer.execute("8521478962","9050442999", new Money(new BigDecimal(10_000), CurrencyTypes.EURO));
+        transfer.execute("6839754810","5331799194", new Money(new BigDecimal(10_000), CurrencyTypes.EURO));
     }
 
     @Test
     void should_return_account_balance() {
         RetrieveBalance retrieveBalance = new RetrieveBalance(bankAccounts);
-        System.out.println(retrieveBalance.getAccountBalance("8521478962"));
+        System.out.println(retrieveBalance.getAccountBalance("6839754810"));
     }
 
     @Test
     void should_return_transaction() {
-        List<TransactionDTO> transactions1 = transactions.getTransactions("9050442999");
+        List<GetTransactionDTO> transactions1 = transactions.getTransactions("6839754810");
         System.out.println(transactions1);
 
     }

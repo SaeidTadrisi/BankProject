@@ -130,16 +130,16 @@ public class BankAccountTest {
 
     @Test
     void should_get_transaction_history() {
-        List<TransactionDTO> byAccountNumber = transactions.getTransactions("1298574125");
+        List<GetTransactionDTO> byAccountNumber = transactions.getTransactions("1298574125");
 
-        List<TransactionDTO> expectedList = new ArrayList<>();
-        expectedList.add(new TransactionDTO("1298574125", new BigDecimal(10_000), EURO.name()
+        List<GetTransactionDTO> expectedList = new ArrayList<>();
+        expectedList.add(new GetTransactionDTO("1298574125", new BigDecimal(10_000), EURO.name()
                 , new BigDecimal(50_000),"DEPOSIT" ));
 
-        expectedList.add(new TransactionDTO("1298574125", new BigDecimal(10_000), EURO.name()
+        expectedList.add(new GetTransactionDTO("1298574125", new BigDecimal(10_000), EURO.name()
                 , new BigDecimal(50_000),"Withdraw" ));
 
-        expectedList.add(new TransactionDTO("1298574125",new BigDecimal(10_000), EURO.name()
+        expectedList.add(new GetTransactionDTO("1298574125",new BigDecimal(10_000), EURO.name()
                 , new BigDecimal(50_000),"Transfer" ));
 
         assertThat(byAccountNumber.toString()).isEqualTo(expectedList.toString());

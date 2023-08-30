@@ -1,8 +1,7 @@
 import model.BankAccount;
 import model.Money;
 import model.Profile;
-import use_case.BankAccountDTO;
-import use_case.BankAccounts;
+import model.BankAccounts;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -38,10 +37,6 @@ public class FakeBankAccounts implements BankAccounts {
 
     public BankAccount findByAccountNumber(String accountNumber) {
         return customers.get(accountNumber);
-    }
-
-    @Override
-    public void saveBalance(BankAccountDTO bankAccountDTO) {
     }
 
 }

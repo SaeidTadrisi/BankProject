@@ -1,7 +1,9 @@
 package use_case;
 
 import model.BankAccount;
+import model.BankAccounts;
 import model.Money;
+import model.Transactions;
 
 import static model.TransactionType.WITHDRAW;
 
@@ -21,9 +23,6 @@ public class Withdraw {
 
         bankAccount.withdraw(money);
 
-        bankAccounts.saveBalance(new BankAccountDTO(accountNumber,bankAccount.getBalance()));
-        transactions.saveTransaction(
-                new TransactionDTO(accountNumber,money.getAmount(),money.getCurrencyType().name()
-                ,bankAccount.getBalance(), WITHDRAW.name()));
+        transactions.saveToDatabase(new SaveTransactionDTO(bankAccount, money),accountNumber, WITHDRAW);
     }
 }

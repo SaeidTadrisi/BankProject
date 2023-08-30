@@ -1,11 +1,7 @@
 package infrastracture;
 
-import model.BankAccount;
-import model.CurrencyTypes;
-import model.Money;
-import model.Profile;
-import use_case.BankAccountDTO;
-import use_case.BankAccounts;
+import model.*;
+import model.BankAccounts;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,10 +12,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.UUID;
 
 import static java.sql.DriverManager.getConnection;
 
-public class MySQLBankAccounts implements BankAccounts {
+public class MySQLBankAccounts implements BankAccounts, AccountNumberGenerator {
     private String host;
     private String user;
     private String pass;
@@ -37,9 +34,6 @@ public class MySQLBankAccounts implements BankAccounts {
                     "FROM accounts a JOIN profiles p ON a.account_number = p.account_number " +
                     "WHERE a.account_number = ?";
 
-    public static final String SAVE_BALANCE =
-            "UPDATE accounts SET balance = ? WHERE account_number = ?";
-
     public static final String DUPLICATE_SEARCH_SQL = "SELECT COUNT(*) FROM profiles WHERE national_Id = ?";
 
     @Override
@@ -50,13 +44,13 @@ public class MySQLBankAccounts implements BankAccounts {
                 throw new DuplicateRecordFoundException();
             } else {
                 PreparedStatement saveAccountStatement = connection.prepareStatement(SAVE_ACCOUNT_SQL);
-                saveAccountStatement.setString(1, bankAccount.getAccountNumber());
+                saveAccountStatement.setString(1, generate());
                 saveAccountStatement.setString(2, bankAccount.getCurrencyType().name());
                 saveAccountStatement.setBigDecimal(3, bankAccount.getAmount());
                 saveAccountStatement.executeUpdate();
 
                 PreparedStatement saveProfileStatement = connection.prepareStatement(SAVE_PROFILE_SQL);
-                saveProfileStatement.setString(1, bankAccount.getAccountNumber());
+                saveProfileStatement.setString(1, generate());
                 saveProfileStatement.setString(2, bankAccount.getFirstName());
                 saveProfileStatement.setString(3, bankAccount.getLastName());
                 saveProfileStatement.setString(4, bankAccount.getNationalId());
@@ -92,19 +86,6 @@ public class MySQLBankAccounts implements BankAccounts {
         }
     }
 
-    @Override
-    public void saveBalance(BankAccountDTO bankAccountDTO) {
-        loadConfigFile();
-        try (final Connection connection = getConnection(host, user, pass)) {
-                PreparedStatement saveBalance = connection.prepareStatement(SAVE_BALANCE);
-                saveBalance.setBigDecimal(1, bankAccountDTO.getBalance());
-                saveBalance.setString(2, bankAccountDTO.getAccountNumber());
-                saveBalance.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private boolean duplicateCheck(String national_id) {
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass);
@@ -132,5 +113,11 @@ public class MySQLBankAccounts implements BankAccounts {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String generate() {
+        return UUID.randomUUID().toString().replace("-", "")
+                .replaceAll("[^0-9]", "").substring(0, 10);
     }
 }

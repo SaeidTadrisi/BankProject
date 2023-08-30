@@ -1,7 +1,9 @@
 package infrastracture;
 
-import use_case.TransactionDTO;
-import use_case.Transactions;
+import model.TransactionType;
+import use_case.GetTransactionDTO;
+import use_case.SaveTransactionDTO;
+import model.Transactions;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,40 +32,53 @@ public class MySQLTransactions implements Transactions {
             "transactions (account_number,transaction_type,currency_type," +
             " amount) VALUES (?, ?, ?, ?)";
 
-    @Override
-    public void saveTransaction(TransactionDTO transactionDTO) {
-        loadConfigFile();
-        try (final Connection connection = getConnection(host, user, pass)) {
-            PreparedStatement saveTransaction = connection.prepareStatement(SAVE_TRANSACTION);
-            saveTransaction.setString(1, transactionDTO.getAccountNumber());
-            saveTransaction.setString(2, transactionDTO.getTransactionType());
-            saveTransaction.setString(3, transactionDTO.getCurrencyType());
-            saveTransaction.setBigDecimal(4, transactionDTO.getAmount());
-            saveTransaction.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static final String SAVE_BALANCE =
+            "UPDATE accounts SET balance = ? WHERE account_number = ?";
 
-    public List<TransactionDTO> getTransactions(String accountNumber) {
-        List<TransactionDTO> transactionHistory = new ArrayList<>();
+    public List<GetTransactionDTO> getTransactions(String accountNumber) {
+        List<GetTransactionDTO> transactionHistory = new ArrayList<>();
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass);
              final PreparedStatement select = connection.prepareStatement(SELECT_SQL)) {
             select.setString(1, accountNumber);
             ResultSet resultSet = select.executeQuery();
             while (resultSet.next()) {
-                TransactionDTO transactionDTO = new TransactionDTO(
+                GetTransactionDTO getTransactionDTO = new GetTransactionDTO(
                         accountNumber, resultSet.getBigDecimal("amount"),
                         resultSet.getString("currency_type"),
                         resultSet.getBigDecimal("balance"),
                         resultSet.getString("transaction_type"));
-                transactionHistory.add(transactionDTO);
+                transactionHistory.add(getTransactionDTO);
             }
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
         return transactionHistory;
+    }
+
+    @Override
+    public void saveToDatabase(SaveTransactionDTO saveTransactionDTO, String accountNumber
+                               , TransactionType transactionType) {
+        loadConfigFile();
+        try (final Connection connection = getConnection(host, user, pass)) {
+            PreparedStatement saveBalance = connection.prepareStatement(SAVE_BALANCE);
+            saveBalance.setBigDecimal(1, saveTransactionDTO.getBalance());
+            saveBalance.setString(2, accountNumber);
+            saveBalance.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        loadConfigFile();
+        try (final Connection connection = getConnection(host, user, pass)) {
+            PreparedStatement saveTransaction = connection.prepareStatement(SAVE_TRANSACTION);
+            saveTransaction.setString(1, accountNumber);
+            saveTransaction.setString(2, transactionType.name());
+            saveTransaction.setString(3, saveTransactionDTO.getCurrencyType());
+            saveTransaction.setBigDecimal(4, saveTransactionDTO.getAmount());
+            saveTransaction.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void loadConfigFile() {
