@@ -24,10 +24,8 @@ public class Transfer {
         sourceBankAccount.withdraw(money);
         destinationBankAccount.deposit(money);
 
-        transactions.saveToDatabase(new SaveTransactionDTO(sourceBankAccount, money)
-                ,sourceBankAccountNumber, TRANSFERS_SENT);
-        transactions.saveToDatabase(new SaveTransactionDTO(destinationBankAccount, money)
-                ,destinationBankAccountNumber, TRANSFERS_RECEIVED);
+        transactions.saveToDatabase(new SaveTransactionDTO(sourceBankAccount, money), TRANSFERS_SENT);
+        transactions.saveToDatabase(new SaveTransactionDTO(destinationBankAccount, money), TRANSFERS_RECEIVED);
 
     }
 }

@@ -1,7 +1,6 @@
 package infrastracture;
 
 import model.*;
-import model.BankAccounts;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,11 +11,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.UUID;
 
 import static java.sql.DriverManager.getConnection;
 
-public class MySQLBankAccounts implements BankAccounts, AccountNumberGenerator {
+public class MySQLBankAccounts implements BankAccounts {
     private String host;
     private String user;
     private String pass;
@@ -29,10 +27,11 @@ public class MySQLBankAccounts implements BankAccounts, AccountNumberGenerator {
             "INSERT INTO accounts (account_number, currency_type, balance) " +
             "VALUES (?, ?, ?);";
 
-    public static final String SELECT_CUSTOMER_BY_ACCOUNT_NUMBER =
-            "SELECT a.currency_type, a.balance, p.first_name, p.last_name, p.national_id, p.phone_number " +
-                    "FROM accounts a JOIN profiles p ON a.account_number = p.account_number " +
-                    "WHERE a.account_number = ?";
+    public static final String SAVE_TRANSACTION = "INSERT INTO " +
+            "transactions (account_number,transaction_type,currency_type," +
+            " amount) VALUES (?, ?, ?, ?)";
+    public static final String SELECT_BANK_ACCOUNT_BY_ACCOUNT_NUMBER =
+            "SELECT currency_type, balance FROM accounts WHERE account_number = ?";
 
     public static final String DUPLICATE_SEARCH_SQL = "SELECT COUNT(*) FROM profiles WHERE national_Id = ?";
 
@@ -44,18 +43,25 @@ public class MySQLBankAccounts implements BankAccounts, AccountNumberGenerator {
                 throw new DuplicateRecordFoundException();
             } else {
                 PreparedStatement saveAccountStatement = connection.prepareStatement(SAVE_ACCOUNT_SQL);
-                saveAccountStatement.setString(1, generate());
+                saveAccountStatement.setString(1, bankAccount.getAccountNumber());
                 saveAccountStatement.setString(2, bankAccount.getCurrencyType().name());
                 saveAccountStatement.setBigDecimal(3, bankAccount.getAmount());
                 saveAccountStatement.executeUpdate();
 
                 PreparedStatement saveProfileStatement = connection.prepareStatement(SAVE_PROFILE_SQL);
-                saveProfileStatement.setString(1, generate());
+                saveProfileStatement.setString(1, bankAccount.getAccountNumber());
                 saveProfileStatement.setString(2, bankAccount.getFirstName());
                 saveProfileStatement.setString(3, bankAccount.getLastName());
                 saveProfileStatement.setString(4, bankAccount.getNationalId());
                 saveProfileStatement.setString(5, bankAccount.getPhoneNumber());
                 saveProfileStatement.executeUpdate();
+
+                PreparedStatement saveTransaction = connection.prepareStatement(SAVE_TRANSACTION);
+                saveTransaction.setString(1, bankAccount.getAccountNumber());
+                saveTransaction.setString(2, TransactionType.DEPOSIT.name());
+                saveTransaction.setString(3, bankAccount.getFirstDeposit().getCurrencyType().name());
+                saveTransaction.setBigDecimal(4, bankAccount.getFirstDeposit().getAmount());
+                saveTransaction.executeUpdate();
             }
         } catch (SQLException e) {
             throw new MainSQLException(e);
@@ -66,18 +72,13 @@ public class MySQLBankAccounts implements BankAccounts, AccountNumberGenerator {
     public BankAccount findByAccountNumber(String accountNumber) {
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass)) {
-            PreparedStatement selectProfile = connection.prepareStatement(SELECT_CUSTOMER_BY_ACCOUNT_NUMBER);
+            PreparedStatement selectProfile = connection.prepareStatement(SELECT_BANK_ACCOUNT_BY_ACCOUNT_NUMBER);
             selectProfile.setString(1, accountNumber);
             ResultSet resultSet = selectProfile.executeQuery();
             if (resultSet.next()) {
-                String firstName = resultSet.getString("first_name");
-                String lastName = resultSet.getString("last_name");
-                String nationalId = resultSet.getString("national_id");
-                String phoneNumber = resultSet.getString("phone_number");
                 String currencyType = resultSet.getString("currency_type");
                 BigDecimal balance = resultSet.getBigDecimal("balance");
-                return new BankAccount(new Profile(firstName,lastName,nationalId,phoneNumber)
-                        , new Money(balance, CurrencyTypes.valueOf(currencyType)));
+                return new BankAccount(accountNumber, CurrencyTypes.valueOf(currencyType), balance);
             } else {
                 throw new RecordNotFoundException();
             }
@@ -113,11 +114,5 @@ public class MySQLBankAccounts implements BankAccounts, AccountNumberGenerator {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public String generate() {
-        return UUID.randomUUID().toString().replace("-", "")
-                .replaceAll("[^0-9]", "").substring(0, 10);
     }
 }

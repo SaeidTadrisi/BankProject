@@ -23,6 +23,6 @@ public class Withdraw {
 
         bankAccount.withdraw(money);
 
-        transactions.saveToDatabase(new SaveTransactionDTO(bankAccount, money),accountNumber, WITHDRAW);
+        transactions.saveToDatabase(new SaveTransactionDTO(bankAccount, money), WITHDRAW);
     }
 }

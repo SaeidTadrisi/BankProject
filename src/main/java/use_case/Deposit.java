@@ -17,11 +17,11 @@ public class Deposit {
     this.transactions = transactions;
     }
 
-    public void execute (String accountNumber, Money money){
+    public void execute(String accountNumber, Money money){
         BankAccount bankAccount = bankAccounts.findByAccountNumber(accountNumber);
 
         bankAccount.deposit(money);
 
-        transactions.saveToDatabase(new SaveTransactionDTO(bankAccount, money), accountNumber, DEPOSIT);
+        transactions.saveToDatabase(new SaveTransactionDTO(bankAccount, money), DEPOSIT);
     }
 }

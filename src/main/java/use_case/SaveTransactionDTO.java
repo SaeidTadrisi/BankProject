@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 public class SaveTransactionDTO {
     private final BigDecimal balance;
+    private final String accountNumber;
     private final String currencyType;
     private final BigDecimal amount;
 
@@ -14,6 +15,7 @@ public class SaveTransactionDTO {
         this.balance = bankAccount.getBalance();
         this.currencyType = money.getCurrencyType().name();
         this.amount = money.getAmount();
+        this.accountNumber = bankAccount.getAccountNumber();
     }
 
 
@@ -27,5 +29,9 @@ public class SaveTransactionDTO {
 
     public BigDecimal getAmount() {
         return amount;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
     }
 }

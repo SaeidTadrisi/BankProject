@@ -32,10 +32,7 @@ public class FakeTransactions implements Transactions {
     }
 
     @Override
-    public void saveToDatabase(SaveTransactionDTO saveTransactionDTO, String accountNumber
-                               , TransactionType transactionType) {
-
+    public void saveToDatabase(SaveTransactionDTO saveTransactionDTO, TransactionType transactionType) {
     }
-
 
 }

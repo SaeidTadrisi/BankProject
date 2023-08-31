@@ -1,29 +1,44 @@
 package model;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class BankAccount {
-    private final Profile profile;
+    private Profile profile;
     private BigDecimal balance;
-    private final Money money;
+    private Money firstDeposit;
+    private final String accountNumber;
+    private CurrencyTypes currencyType;
 
 
-    public BankAccount(Profile profile, Money money) {
+    public BankAccount(Profile profile, Money firstDeposit) {
         this.profile = profile;
-        this.money = money;
-        this.balance = money.getAmount();
+        this.firstDeposit = firstDeposit;
+        this.balance = firstDeposit.getAmount();
         check();
+        this.accountNumber = accountNumberGenerator();
+    }
+
+    public BankAccount(String accountNumber,CurrencyTypes currencyType, BigDecimal balance ) {
+        this.accountNumber = accountNumber;
+        this.currencyType = currencyType;
+        this.balance = balance;
+    }
+
+    public String accountNumberGenerator() {
+        return UUID.randomUUID().toString().replace("-", "")
+                .replaceAll("[^0-9]", "").substring(0, 10);
     }
 
     public void deposit(Money money) {
-        if (this.money.getCurrencyType() != money.getCurrencyType()) {
+        if (currencyType != money.getCurrencyType()) {
             throw new VariousCurrencyException();
         }
         balance = balance.add(money.getAmount());
     }
 
     public void withdraw(Money money) {
-        if (this.money.getCurrencyType() != money.getCurrencyType()) {
+        if (currencyType != money.getCurrencyType()) {
             throw new VariousCurrencyException();
         }
         if (balance.compareTo(money.getAmount()) < 0) {
@@ -38,7 +53,7 @@ public class BankAccount {
 
     public void check() {
         profile.check();
-        money.check();
+        firstDeposit.check();
     }
 
     public String getFirstName() {
@@ -62,19 +77,16 @@ public class BankAccount {
     }
 
     public CurrencyTypes getCurrencyType() {
-        return money.getCurrencyType();
+        return firstDeposit.getCurrencyType();
     }
 
-    @Override
-    public String toString() {
-        return "BankAccount{" +
-                "firstName='" + getFirstName() + '\'' +
-                ", lastName='" + getLastName() + '\'' +
-                ", nationalId='" + getNationalId() + '\'' +
-                ", phoneNumber='" + getPhoneNumber() + '\'' +
-                ", balance=" + getAmount() +
-                ", currency=" + getCurrencyType() +
-                '}';
+    public String getAccountNumber() {
+        return accountNumber;
     }
+
+    public Money getFirstDeposit() {
+        return firstDeposit;
+    }
+
 }
 

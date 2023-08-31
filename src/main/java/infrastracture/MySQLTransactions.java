@@ -57,13 +57,12 @@ public class MySQLTransactions implements Transactions {
     }
 
     @Override
-    public void saveToDatabase(SaveTransactionDTO saveTransactionDTO, String accountNumber
-                               , TransactionType transactionType) {
+    public void saveToDatabase(SaveTransactionDTO saveTransactionDTO, TransactionType transactionType) {
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass)) {
             PreparedStatement saveBalance = connection.prepareStatement(SAVE_BALANCE);
             saveBalance.setBigDecimal(1, saveTransactionDTO.getBalance());
-            saveBalance.setString(2, accountNumber);
+            saveBalance.setString(2, saveTransactionDTO.getAccountNumber());
             saveBalance.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -71,7 +70,7 @@ public class MySQLTransactions implements Transactions {
         loadConfigFile();
         try (final Connection connection = getConnection(host, user, pass)) {
             PreparedStatement saveTransaction = connection.prepareStatement(SAVE_TRANSACTION);
-            saveTransaction.setString(1, accountNumber);
+            saveTransaction.setString(1, saveTransactionDTO.getAccountNumber());
             saveTransaction.setString(2, transactionType.name());
             saveTransaction.setString(3, saveTransactionDTO.getCurrencyType());
             saveTransaction.setBigDecimal(4, saveTransactionDTO.getAmount());
